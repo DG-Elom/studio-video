@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@500;600&family=Montserrat:wght@700;800&display=block">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="kit-motion.js"></script>
+<style>
+  :root { --noir: #070404; --orange: #ff6a1f; --clair: #f8a24a; --creme: #efe9df; --os: #ebe4dc; }
+  html, body { margin: 0; background: #000; }
+  #scene { position: relative; width: 1080px; height: 1350px; overflow: hidden; background: var(--noir); }
+  #cam, .plan { position: absolute; inset: 0; }
+  .plan { overflow: hidden; visibility: hidden; }
+  .abs { position: absolute; }
+  .titre { font-family: Anton; font-weight: 400; line-height: 1; white-space: nowrap; display: inline-block; }
+  #lueurs, #braises, #flash, #vignette, #grain { position: absolute; inset: 0; pointer-events: none; }
+  #lueurs, #braises { mix-blend-mode: screen; }
+  #flash { background: #fff3e4; opacity: 0; }
+  #vignette { background: radial-gradient(ellipse 72% 68% at 50% 48%, transparent 52%, rgba(0,0,0,.62) 100%); }
+  #grain { mix-blend-mode: overlay; opacity: .07; }
+
+  /* A — logo */
+  #logoA { display: flex; align-items: center; gap: 30px; }
+  #mono { width: 290px; height: 336px; filter: drop-shadow(0 0 18px rgba(255,120,40,.55)); }
+  #mono img { width: 100%; height: 100%; display: block; }
+  #mots { border-left: 6px solid #fff; padding-left: 32px; }
+  #mots .m { overflow: hidden; font: 800 78px/1.04 Montserrat; color: #fff; letter-spacing: .02em; }
+  #mots .m span { display: inline-block; }
+  .trait { left: 70px; right: 70px; top: 674px; height: 3px; transform-origin: 0 50%;
+           background: linear-gradient(90deg, rgba(255,140,50,0), #ffd6a3 30%, #fff 50%, #ffb066 70%, rgba(255,120,40,0));
+           box-shadow: 0 0 16px 4px rgba(255,120,40,.75); }
+
+  /* B — FLAMENCO */
+  #bGroupe { inset: 0; }
+  #anag, #anagLum { font-kerning: none; }  /* mot découpé en lettres = sans crénage : la copie doit l'être aussi */
+  #anag { color: var(--os); }
+  #anagLum { color: transparent; -webkit-background-clip: text; background-clip: text;
+             background-image: linear-gradient(100deg, transparent 42%, rgba(255,255,255,.9) 50%, transparent 58%);
+             background-size: 300% 100%; background-position: 130% 0; }
+  .rang { color: transparent; -webkit-text-stroke: 2px rgba(235,228,220,.24); opacity: 0; }
+  #porte { background: linear-gradient(160deg, var(--clair), var(--orange)); border-radius: 999px; transform: scale(0); }
+
+  /* C — INHOUSE (positif puis négatif au choc) */
+  #cFond { inset: 0; background: linear-gradient(135deg, #f9a64d 0%, #ff7627 55%, #ff4f18 100%); }
+  #pC.neg #cFond { background: var(--noir); }
+  #cMot { left: 0; width: 1080px; }
+  .moitie { position: absolute; inset: 0; overflow: hidden; }
+  .haut { clip-path: inset(0 0 50% 0); }
+  .bas { clip-path: inset(50% 0 0 0); }
+  .inh { position: absolute; color: #140b07; }
+  #pC.neg .inh .car { color: transparent; -webkit-background-clip: text; background-clip: text;
+                      background-image: linear-gradient(100deg, #f7b060 0%, #f7954a 35%, #ff6a25 70%, #ff4a16 100%);
+                      background-size: var(--lw) 100%; background-position: calc(-1 * var(--dx)) 0; }
+  #cSur { left: 0; width: 1080px; text-align: center; font: 800 30px Montserrat; color: #140b07; }
+  #pC.neg #cSur { color: #fff; }
+  #cLigne { height: 12px; background: #140b07; transform-origin: 0 50%; }
+  #pC.neg #cLigne { background: var(--orange); box-shadow: 0 0 22px rgba(255,106,31,.8); }
+  #bordOmbre { position: absolute; inset: 0; filter: drop-shadow(0 0 7px rgba(0,0,0,.55)); visibility: hidden; }
+  #bord { position: absolute; inset: 0; background: var(--creme); }
+
+  /* D — personnes */
+  #dImage { inset: 0; }
+  #dFond { left: 0; top: 0; width: 1080px; height: 1350px; filter: blur(12px) brightness(.55) saturate(1.2); }
+  #dGens { left: -54px; top: 640px; width: 1188px; height: 752px;
+           filter: brightness(1.3) contrast(1.06) saturate(1.1) drop-shadow(0 -6px 26px rgba(255,110,30,.45)); }
+  #dOmbre { inset: 0; background: linear-gradient(to bottom, rgba(7,4,4,0) 62%, rgba(7,4,4,.5) 72%, rgba(7,4,4,.92) 84%, var(--noir) 95%); }
+  #dMots { left: 0; width: 1080px; text-align: center; }
+  #dMots .ligne { display: block; }
+  #dMots .mot { display: inline-block; color: #fff; }
+  #dMots .orange { color: var(--orange); text-shadow: 0 0 40px rgba(255,106,31,.45); }
+
+  /* E — date */
+  #carteV { left: 95px; top: 429px; width: 890px; height: 462px; transform-origin: 50% 50%;
+            filter: drop-shadow(0 28px 36px rgba(0,0,0,.6)); }
+  #papier { left: -40px; top: -40px; width: 970px; height: 542px; background: radial-gradient(ellipse at 30% 20%, #fbf8f2, #ece5d9 70%, #e2d9cb); }
+  #l1, #l2 { left: 0; top: 0; }
+  #l1 { color: #151010; word-spacing: -0.12em; }
+  #le, #sept { color: #fb6207; display: inline-block; }
+  #l2 { font-family: "Bebas Neue"; font-weight: 400; line-height: 1; white-space: nowrap; display: inline-block; color: #171010; font-kerning: none; }
+  #ticker { left: 0; right: 0; bottom: 0; height: 78px; background: #0b0605; border-top: 3px solid var(--orange); overflow: hidden; }
+  #tickTxt { position: absolute; left: 0; top: 20px; white-space: nowrap; font: 800 30px/1 Montserrat; color: #fff; letter-spacing: .03em; }
+  #tickTxt b { color: var(--orange); padding: 0 26px; }
+
+  /* F — atterrissage */
+  #pF img { position: absolute; display: block; }
+  #fCarte, #finale { opacity: 0; }
+</style></head>
+<body><div id="scene">
+<div id="cam">
+  <div class="plan" id="pF">
+    <img id="fGhost" src="affiche.png" style="left:0;top:0;width:1080px;height:1350px">
+    <img id="fCarte" src="calques/carte.png" style="left:264px;top:890px;width:553px;height:318px">
+    <img id="fT6" src="calques/T6.png" style="left:119px;top:378px;width:853px;height:318px">
+    <img id="finale" src="affiche.png" style="left:0;top:0;width:1080px;height:1350px">
+  </div>
+  <div class="plan" id="pD">
+    <div id="dImage" class="abs">
+      <img id="dFond" class="abs" src="calques/fond.png">
+      <div id="dMots" class="abs">
+        <div class="ligne"><span class="titre" id="dL1"><span class="mot">NE</span>&nbsp;<span class="mot">VIENS</span>&nbsp;<span class="mot">PAS</span></span></div>
+        <div class="ligne"><span class="titre" id="dL2"><span class="mot orange">SEULE</span></span></div>
+      </div>
+      <img id="dGens" class="abs" src="calques/S1.png">
+    </div>
+    <div id="dOmbre" class="abs"></div>
+  </div>
+  <div class="plan" id="pE">
+    <div id="carteV" class="abs">
+      <div id="papier" class="abs"></div>
+      <div id="l1" class="abs titre"><span id="le">LE</span>&nbsp;<span id="vingt7">27</span>&nbsp;<span id="sept">SEPTEMBRE</span></div>
+      <div id="l2" class="abs">À&nbsp;&nbsp;PARTIR DE 14H30</div>
+    </div>
+    <div id="ticker" class="abs"><div id="tickTxt"></div></div>
+  </div>
+  <div class="plan" id="pC">
+    <div id="cFond" class="abs"></div>
+    <div id="cSur" class="abs">COLLECTIF AURORE LYON</div>
+    <div id="cMot" class="abs">
+      <div class="moitie haut"><div class="titre inh">INHOUSE</div></div>
+      <div class="moitie bas"><div class="titre inh">INHOUSE</div></div>
+    </div>
+    <div id="cLigne" class="abs"></div>
+  </div>
+  <div id="bordOmbre"><div id="bord"></div></div>
+  <div class="plan" id="pB">
+    <div id="bGroupe" class="abs">
+      <div id="rangs"></div>
+      <div id="porte" class="abs"></div>
+      <div id="anag" class="titre abs">FLAMENCO</div>
+      <div id="anagLum" class="titre abs">FLAMENCO</div>
+    </div>
+  </div>
+  <div class="plan" id="pA">
+    <div id="logoA" class="abs">
+      <div id="mono"><img src="calques/logo-mono.png"></div>
+      <div id="mots"><div class="m"><span>COLLECTIF</span></div><div class="m"><span>AURORE</span></div><div class="m"><span>DANSE</span></div><div class="m"><span>LYON</span></div></div>
+    </div>
+    <div id="fenteH" class="trait abs"></div><div id="fenteB" class="trait abs"></div>
+  </div>
+</div>
+<div id="lueurs"></div>
+<canvas id="braises" width="1080" height="1350"></canvas>
+<div id="vignette"></div>
+<div id="flash"></div>
+<canvas id="grain" width="1080" height="1350"></canvas>
+</div>
+<script>
+/* EXEMPLE DU SKILL motion-affiche (mode teaser). À copier dans le projet avec kit-motion.js.
+   CADRE À GARDER : #scene > #cam > .plan (un par scène, le premier en bas de la pile) + #lueurs, #braises,
+   #vignette, #flash, #grain ; objet `etat` (effets pilotés par la timeline) ; choc() / flash() / plan() / regle() ;
+   window.echantillons ; window.pret → construire() → window.rendu (secousse, grain, braises, lueurs, déchirure).
+   À RÉÉCRIRE : le CSS et le HTML des plans, les sections A à E de construire(), la fiche ci-dessous.
+   Atterrissage (F) : garder le principe (affiche fantôme floue → nette, calques pixel à leur place, #finale,
+   effets à 0 avant la fin), changer les calques et les instants.
+   Chemins : affiche.png et calques/ produits par analyse.py et calques.py. */
+/* FICHE DE MOUVEMENT — FLAMENCO INHOUSE (affiche fictive), 15 s, 1080x1350, rythme 120 bpm (temps = 0,5 s)
+   Concept : un feu qui s'allume. Chaque mot de l'affiche a sa scène, l'affiche n'apparaît qu'à la fin.
+   A 0,00-1,30 logo : fente de lumière qui s'ouvre, mots qui glissent, sortie vers la caméra.
+   B 1,30-3,40 FLAMENCO : lettres claquées une à une (choc à la dernière), rangs en contour qui défilent,
+               reflet, le O s'allume en orange puis zoom À TRAVERS le O.
+   C 3,40-5,55 INHOUSE noir sur orange, lettres qui montent, mot coupé en deux qui se referme (CHOC 4,32)
+               → négatif orange sur noir, feu ; sortie par déchirure de papier.
+   D 5,10-10,7 les personnes montent ; NE VIENS PAS / SEULE mot à mot (petits chocs), puis mise au noir.
+   E 7,60-11,1 carte de papier lancée (choc), LE · compteur 27 · SEPTEMBRE · À PARTIR DE 14H30 tapé ; bandeau d'infos.
+   F 10,3-15,0 atterrissage : l'affiche floue et sombre se précise, INHOUSE tombe à sa place (CHOC 10,86),
+               la carte rejoint la sienne ; 12,2 affiche exacte, braises ; 14,8-15 affiche pure. */
+const W = 1080, H = 1350, D = 15;
+window.DUREE = D;
+const K = KIT, $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const etat = { lueur: .45, braises: .25, grain: .07, vignette: 1, dech: 0 };
+const impacts = [];
+const choc = (t, force = 1, duree = .45) => impacts.push({ t, force, duree });
+const tl = gsap.timeline({ paused: true, defaults: { ease: "expo.out" } });
+const flash = (t, a = .5, d = .22) => tl.fromTo("#flash", { opacity: a }, { opacity: 0, duration: d, ease: "power2.out", immediateRender: false }, t);
+const plan = (sel, t0, t1) => { tl.set(sel, { visibility: "visible" }, t0); if (t1 != null) tl.set(sel, { visibility: "hidden" }, t1); };
+const regle = (t, vals, d = .3) => tl.to(etat, { ...vals, duration: d, ease: "power1.inOut" }, t);
+const poly = pts => `polygon(${pts.map(([x, y]) => `${x.toFixed(1)}px ${y.toFixed(1)}px`).join(",")})`;
+
+function construire() {
+  const scene = $("#scene");
+  // ---------- A : logo
+  const lg = $("#logoA").getBoundingClientRect();
+  gsap.set("#logoA", { left: (W - lg.width) / 2, top: (H - lg.height) / 2 });
+  plan("#pA", 0, 1.30);
+  tl.fromTo(".trait", { scaleX: 0 }, { scaleX: 1, duration: .38 }, 0)
+    .to("#fenteH", { y: -lg.height / 2 - 14, duration: .5 }, .26)
+    .to("#fenteB", { y: lg.height / 2 + 14, duration: .5 }, .26)
+    .fromTo("#logoA", { clipPath: "inset(50% -20% 50% -20%)" }, { clipPath: "inset(0% -20% 0% -20%)", duration: .5 }, .26)
+    .to(".trait", { opacity: 0, duration: .3, ease: "power1.in" }, .74)
+    .from("#mots .m span", { yPercent: 105, duration: .5, stagger: .06 }, .32)
+    .fromTo("#mono", { scale: .75, opacity: 0 }, { scale: 1, opacity: 1, duration: .6 }, .28)
+    .fromTo("#logoA", { scale: 1 }, { scale: 1.07, duration: .78, ease: "none" }, .30)
+    .fromTo("#logoA", { scale: 1.07, opacity: 1 }, { scale: 2, opacity: 0, duration: .22, ease: "expo.in", immediateRender: false }, 1.08);
+  flash(1.30, .3, .2);
+
+  // ---------- B : FLAMENCO
+  const anag = $("#anag"), lum = $("#anagLum");
+  const fs = K.ajuste(anag, 1000);
+  lum.style.fontSize = fs + "px";
+  const ink = K.encre(anag, scene);
+  const top = anag.offsetTop + (H / 2 - (ink.y + ink.h / 2)), left = (W - anag.getBoundingClientRect().width) / 2;
+  gsap.set([anag, lum], { top, left });
+  const pasY = ink.h * 1.16;
+  [-3, -2, -1, 1, 2, 3].forEach(k => {
+    const r = document.createElement("div");
+    r.className = "rang titre abs";
+    r.textContent = "FLAMENCO FLAMENCO FLAMENCO FLAMENCO";
+    r.style.fontSize = fs + "px";
+    r.style.top = top + k * pasY + "px";
+    const x0 = -300 - (k % 2 ? 450 : 0);
+    r.style.left = x0 + "px";
+    r.dataset.dx = k % 2 ? 260 : -260;
+    $("#rangs").appendChild(r);
+  });
+  const lettresA = K.lettres(anag);
+  const O = lettresA[7], io = K.encre(O, $("#bGroupe"));
+  const cx = io.x + io.w / 2, cy = io.y + io.h / 2;
+  gsap.set("#porte", { left: io.x + io.w * .16, top: io.y + io.h * .12, width: io.w * .68, height: io.h * .76 });
+  gsap.set("#bGroupe", { transformOrigin: `${cx}px ${cy}px` });
+  plan("#pB", 1.30, 3.40);
+  tl.fromTo(lettresA, { scale: 2.6, opacity: 0 }, { scale: 1, opacity: 1, duration: .32, stagger: .075 }, 1.30);
+  lettresA.forEach((l, i) => choc(1.37 + i * .075, i === 7 ? .9 : .18, i === 7 ? .45 : .22));
+  regle(1.30, { braises: .45 });
+  tl.to(".rang", { opacity: 1, duration: .35, stagger: { each: .05, from: "center" } }, 1.95);
+  $$(".rang").forEach(r => tl.fromTo(r, { x: 0 }, { x: +r.dataset.dx, duration: 3.40 - 1.95, ease: "none" }, 1.95));
+  tl.to(lum, { backgroundPosition: "-30% 0", duration: .6, ease: "power2.inOut" }, 2.28)
+    .to(O, { color: "#ff7a22", duration: .18, ease: "power1.out" }, 2.72)
+    .to("#porte", { scale: 1, duration: .3, ease: "back.out(2)" }, 2.72)
+    .to(".rang", { opacity: 0, duration: .25, ease: "power1.in", stagger: 0 }, 3.0)
+    .fromTo("#bGroupe", { scale: 1 }, { scale: 70, duration: .45, ease: "expo.in" }, 2.95);
+
+  // ---------- C : INHOUSE
+  const inh = $$(".inh");
+  const fi = K.ajuste(inh[0], 960);
+  inh[1].style.fontSize = fi + "px";
+  const iink = K.encre(inh[0], scene), hMot = inh[0].getBoundingClientRect().height;
+  const off = iink.y - inh[0].getBoundingClientRect().top;  // haut des capitales dans la boîte du mot
+  const motTop = H / 2 - 20 - (off + iink.h / 2);
+  gsap.set("#cMot", { top: motTop, height: hMot });
+  gsap.set(inh, { left: (W - inh[0].getBoundingClientRect().width) / 2, top: 0 });
+  const capTop = motTop + off, capBas = capTop + iink.h;
+  gsap.set("#cSur", { top: capTop - 70 });
+  gsap.set("#cLigne", { left: iink.x, width: iink.w, top: capBas + 34 });
+  const hautes = K.lettres(inh[0]), basses = K.lettres(inh[1]);
+  const lw = inh[0].getBoundingClientRect().width;
+  [...hautes, ...basses].forEach(l => {  // un seul dégradé continu à travers les lettres (négatif)
+    l.style.setProperty("--dx", l.offsetLeft + "px");
+    l.style.setProperty("--lw", lw + "px");
+  });
+  plan("#pC", 3.40, 5.60);
+  regle(3.40, { lueur: 0, braises: .08, vignette: .45 }, .05);
+  regle(4.32, { vignette: 1 }, .1);
+  hautes.forEach((l, i) => tl.fromTo([l, basses[i]], { yPercent: 118 }, { yPercent: 0, duration: .55 }, 3.40 + i * .045));
+  tl.fromTo("#cSur", { letterSpacing: "0.9em", opacity: 0 }, { letterSpacing: "0.32em", opacity: 1, duration: .7 }, 3.55)
+    .fromTo("#cLigne", { scaleX: 0 }, { scaleX: 1, duration: .45 }, 3.72)
+    .to(".haut", { x: -85, duration: .24, ease: "power3.inOut" }, 3.95)
+    .to(".bas", { x: 85, duration: .24, ease: "power3.inOut" }, 3.95)
+    .to(".moitie", { x: 0, duration: .13, ease: "power4.in" }, 4.19)
+    .set("#pC", { attr: { class: "plan neg" } }, 4.32)
+    .fromTo("#cMot", { scale: 1 }, { scale: 1.07, duration: 1.2, ease: "power1.out" }, 4.32);
+  choc(4.32, 1.25); flash(4.32, .6, .28);
+  regle(4.32, { lueur: 1, braises: 1 }, .15);
+  tl.to(etat, { dech: 1, duration: .5, ease: "power2.inOut" }, 5.08);
+
+  // ---------- D : personnes + NE VIENS PAS SEULE
+  const l1 = $("#dL1"), l2 = $("#dL2");
+  K.ajuste(l1, 900); K.ajuste(l2, 900);
+  const e1 = K.encre(l1, scene), e2 = K.encre(l2, scene);
+  gsap.set("#dMots", { top: 0 });
+  const y1 = 200, y2 = y1 + e1.h + 34;
+  gsap.set(l1.parentNode, { marginTop: y1 - e1.y });
+  gsap.set(l2.parentNode, { marginTop: y2 - K.encre(l2, scene).y });
+  plan("#pD", 5.05, 10.72);
+  tl.fromTo("#dGens", { y: 110, scale: 1.04 }, { y: 0, scale: 1, duration: 1.1 }, 5.12)
+    .fromTo("#dFond", { scale: 1.2 }, { scale: 1.08, duration: 5.2, ease: "none" }, 5.10)
+    .fromTo("#pD", { scale: 1 }, { scale: 1.05, duration: 2.6, ease: "none" }, 5.10);
+  regle(5.35, { lueur: .75, braises: .7 }, .8);
+  const mots = $$("#dMots .mot");
+  [5.62, 5.80, 5.98, 6.22].forEach((t, i) => {
+    tl.fromTo(mots[i], { scale: 1.7, opacity: 0 }, { scale: 1, opacity: 1, duration: .3 }, t);
+    choc(t + .05, i === 3 ? .75 : .28, i === 3 ? .45 : .22);
+  });
+  tl.to(mots, { yPercent: -35, opacity: 0, duration: .3, stagger: .04, ease: "power2.in" }, 7.40)
+    .fromTo("#dImage", { filter: "brightness(1) blur(0px)" }, { filter: "brightness(.36) blur(7px)", duration: .5, ease: "power2.out" }, 7.55);
+
+  // ---------- E : date
+  // Géométrie de la carte de l'affiche (mesurée) : centre (540.5, 1049), rotation -4,5°, 533x277 px.
+  // Carte vectorielle 890x462 à l'échelle 1 ; à l'arrivée échelle 0,6 → mêmes proportions que la vraie.
+  // Silhouette et lignes relevées au pixel sur la vraie carte (calques/carte.png), ramenées dans ce repère :
+  // ligne 1 : encre 617x113, centre (455,173), -2,2° de plus que la carte ; ligne 2 : 697x101 (avec l'accent), centre (467,306), -2,0°.
+  const SILHOUETTE = [[895.3, 266.4], [886.2, 289.1], [887.5, 313.0], [887.4, 337.2], [886.1, 361.6], [886.5, 387.3], [883.8, 412.8], [881.2, 439.1], [869.8, 461.6], [835.8, 470.5], [792.5, 469.8], [771.6, 481.6], [732.7, 476.7], [706.1, 478.8], [677.9, 476.4], [656.1, 478.1], [631.7, 474.3], [607.4, 467.2], [588.7, 465.5], [571.4, 463.9], [549.8, 450.6], [536.2, 451.2], [523.4, 452.5], [511.3, 454.7], [497.9, 451.4], [486.0, 452.2], [473.9, 450.8], [462.8, 457.0], [451.0, 459.3], [439.0, 460.9], [427.0, 460.3], [415.0, 459.0], [403.1, 457.1], [389.0, 464.4], [374.0, 470.7], [359.9, 471.4], [346.8, 468.1], [334.5, 462.7], [323.3, 455.1], [313.5, 445.6], [293.0, 452.1], [276.6, 450.5], [249.1, 460.4], [225.9, 461.9], [208.0, 455.9], [195.3, 444.2], [168.6, 443.1], [133.2, 445.3], [78.4, 455.7], [29.0, 456.9], [1.2, 442.7], [3.1, 414.1], [2.0, 387.9], [2.3, 362.1], [2.6, 337.2], [2.5, 313.0], [3.8, 289.1], [3.0, 265.8], [3.5, 242.6], [3.5, 219.4], [4.7, 196.3], [5.5, 173.1], [7.5, 149.9], [-0.7, 124.0], [2.3, 99.9], [0.4, 73.6], [1.5, 47.3], [23.8, 30.1], [56.9, 20.3], [98.3, 18.5], [144.2, 24.3], [167.3, 17.9], [195.3, 17.8], [218.9, 16.5], [246.5, 21.9], [263.2, 18.1], [289.8, 28.7], [304.3, 26.3], [316.1, 20.7], [329.7, 18.6], [342.4, 15.9], [355.7, 15.4], [368.2, 14.2], [379.7, 10.5], [392.1, 10.6], [403.7, 8.1], [415.4, 6.3], [427.1, 3.4], [439.0, 1.1], [451.1, -0.6], [463.4, -3.3], [475.7, -2.0], [487.5, 1.6], [499.9, 2.5], [515.5, -7.1], [531.2, -12.5], [546.4, -13.8], [559.1, -8.2], [571.4, -1.9], [593.0, -10.6], [616.8, -19.0], [629.7, -9.7], [647.4, -6.0], [661.8, 2.5], [677.1, 10.7], [706.1, 8.0], [743.8, 1.7], [776.0, 3.5], [788.9, 20.3], [818.5, 28.2], [869.2, 28.7], [905.4, 40.3], [910.0, 66.3], [908.4, 93.7], [908.5, 119.7], [907.1, 145.3], [904.4, 170.5], [903.6, 194.9], [903.2, 219.0], [901.5, 243.0]];
+  $("#papier").style.clipPath = poly(SILHOUETTE.map(([x, y]) => [x + 40, y + 40]));
+  const L1 = $("#l1"), L2 = $("#l2"), carte = $("#carteV");
+  const cale = (el, cx, cy, w, h, rot) => {  // l'encre de el : centre (cx,cy), largeur w, hauteur h, rotation rot
+    el.style.fontSize = "100px";
+    let e = K.encre(el, carte);
+    el.style.fontSize = 100 * h / e.h + "px";
+    e = K.encre(el, carte);
+    const bx = el.offsetLeft, by = el.offsetTop;
+    gsap.set(el, { left: bx + cx - (e.x + e.w / 2), top: by + cy - (e.y + e.h / 2), scaleX: w / e.w, rotation: rot,
+                   transformOrigin: `${e.x + e.w / 2 - bx}px ${e.y + e.h / 2 - by}px` });
+  };
+  cale(L1, 455.4, 173, 617, 113, -2.2);
+  cale(L2, 467.2, 305.8, 697, 101, -2.0);
+  const odo = K.odometre($("#vingt7"), "27", 1);
+  $("#tickTxt").innerHTML = ("EN PRÉSENTIEL &amp; EN DIRECT<b>✦</b>12 RUE DE L'EXEMPLE, 69000 LYON<b>✦</b>TRAM T1 · ARRÊT EXEMPLE<b>✦</b>ABONNE-TOI : @TON_COMPTE<b>✦</b>NE VIENS PAS SEULE<b>✦</b>").repeat(2);
+  plan("#pE", 7.60, 11.15);
+  tl.fromTo("#carteV", { y: 1050, rotation: 24, scale: 1.25 }, { y: 0, rotation: -4.5, scale: 1, duration: .5 }, 7.62);
+  choc(7.98, .8);
+  regle(7.6, { lueur: .55, braises: .5 }, .5);
+  tl.fromTo("#le", { scale: 0 }, { scale: 1, duration: .35, ease: "back.out(2.2)" }, 8.02);
+  odo.forEach(({ pile, n }, i) => tl.fromTo(pile, { yPercent: 0 }, { yPercent: -100 * n / (n + 1), duration: .75 + i * .2 }, 8.08));
+  tl.fromTo("#sept", { clipPath: "inset(0 100% 0 0)", x: -24 }, { clipPath: "inset(0 0% 0 0)", x: 0, duration: .45 }, 8.45);
+  const tape = K.lettres(L2);
+  tape.forEach((c, i) => tl.fromTo(c, { opacity: 0 }, { opacity: 1, duration: .01, ease: "none" }, 8.88 + i * .032));
+  tl.fromTo("#ticker", { yPercent: 110 }, { yPercent: 0, duration: .4 }, 8.30)
+    .fromTo("#tickTxt", { x: 0 }, { x: -760, duration: 2.1, ease: "none" }, 8.30)
+    .to("#ticker", { yPercent: 110, duration: .3, ease: "power2.in" }, 10.20)
+    .fromTo("#carteV", { scale: 1 }, { scale: 1.025, duration: .8, ease: "none", immediateRender: false }, 9.48)
+    .fromTo("#carteV", { x: 0, y: 0, scale: 1.025 }, { x: .5, y: 389, scale: .6, duration: .55, ease: "power3.inOut", immediateRender: false }, 10.30)
+    .set("#fCarte", { opacity: 1 }, 10.84)
+    .to("#carteV", { opacity: 0, duration: .14, ease: "none" }, 10.85);
+
+  // ---------- F : atterrissage sur l'affiche
+  plan("#pF", 10.25);
+  tl.to("#pD", { opacity: 0, duration: .4, ease: "power1.inOut" }, 10.30)
+    .fromTo("#fGhost", { filter: "blur(16px) brightness(.3)", scale: 1.1 }, { filter: "blur(0px) brightness(1)", scale: 1, duration: 1.55, ease: "power2.inOut" }, 10.30)
+    .fromTo("#fT6", { y: -720, scale: 1.3 }, { y: 0, scale: 1, duration: .42, ease: "power4.in" }, 10.44)
+    .fromTo("#finale", { opacity: 0 }, { opacity: 1, duration: .3, ease: "power1.inOut" }, 11.85);
+  choc(10.86, 1.3); flash(10.86, .4, .3);
+  regle(10.3, { lueur: .7, braises: .8 }, .4);
+  regle(10.6, { vignette: 0 }, 1.2);
+  regle(12.2, { lueur: .5, braises: .6 }, 1);
+  regle(14.3, { lueur: 0, braises: 0, grain: 0 }, .5);
+  tl.set({}, {}, D);
+}
+
+const SOURCES = [
+  { x: -60, y: 420, r: 520, c: "255,96,16", a: .55, vx: 40, vy: 60, f: .5, ph: 0 },
+  { x: 1140, y: 980, r: 560, c: "255,120,30", a: .5, vx: 50, vy: 40, f: .4, ph: 2 },
+  { x: 120, y: 1390, r: 430, c: "255,70,10", a: .45, vx: 60, vy: 20, f: .7, ph: 4 },
+  { x: 1010, y: -40, r: 380, c: "255,150,60", a: .35, vx: 30, vy: 30, f: .6, ph: 1 },
+];
+
+// Passages très rapides : plus de sous-images de flou (sinon copies en escalier). Lu par render.py.
+const RAPIDES = [[1.06, 1.32], [2.95, 3.42], [4.17, 4.34], [5.06, 5.60], [7.60, 7.95], [10.55, 10.90]];
+window.echantillons = t => RAPIDES.some(([a, b]) => t >= a && t <= b) ? 16 : 0;
+
+window.pret = K.polices(["400 100px Anton", "400 100px \"Bebas Neue\"", "800 100px Montserrat"]).then(() => {
+  construire();
+  const grain = K.grain($("#grain")), braises = K.braises($("#braises")), lueurs = K.lueurs($("#lueurs"), SOURCES);
+  const dech = K.dechirure({ W, H, angle: -18, seed: 9 });
+  const cam = $("#cam"), pC = $("#pC"), bo = $("#bordOmbre"), bord = $("#bord");
+  window.rendu = t => {
+    tl.seek(t, false);
+    const s = K.secousse(impacts, t);
+    const z = 1 + (2 * Math.max(Math.abs(s.x), Math.abs(s.y)) + 24 * Math.abs(s.r)) / 1000;  // jamais de bord noir pendant la secousse
+    cam.style.transform = `translate(${s.x.toFixed(2)}px,${s.y.toFixed(2)}px) rotate(${s.r.toFixed(3)}deg) scale(${z.toFixed(4)})`;
+    grain(t); $("#grain").style.opacity = etat.grain;
+    braises(t, etat.braises);
+    lueurs(t, etat.lueur);
+    $("#vignette").style.opacity = etat.vignette;
+    if (etat.dech > 0 && etat.dech < 1) {
+      const d = dech(etat.dech);
+      pC.style.clipPath = d.reste; bord.style.clipPath = d.bord; bo.style.visibility = "visible";
+    } else { pC.style.clipPath = ""; bo.style.visibility = "hidden"; }
+  };  // ne rien renvoyer
+});
+</script></body></html>

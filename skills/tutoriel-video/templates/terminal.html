@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Terminal</title>
+<style>
+  body { margin: 0; height: 100vh; background: #1d2433; display: flex; align-items: center; justify-content: center; font-family: -apple-system, sans-serif; }
+  .win { width: 1320px; height: 700px; background: #0f141d; border-radius: 12px; box-shadow: 0 30px 80px rgba(0,0,0,.5); overflow: hidden; display: flex; flex-direction: column; }
+  .bar { height: 38px; background: #262d3a; display: flex; align-items: center; padding: 0 14px; gap: 8px; color: #aab3c2; font-size: 14px; }
+  .dot { width: 13px; height: 13px; border-radius: 50%; }
+  .bar span.t { flex: 1; text-align: center; margin-right: 60px; }
+  #t { flex: 1; padding: 20px 24px; color: #e6edf3; font: 21px/1.5 Menlo, Monaco, monospace; white-space: pre-wrap; word-break: break-all; overflow: auto; }
+  .p { color: #7ee787; } .o { color: #79c0ff; } .c { color: #ffa657; }
+  #in { outline: none; caret-color: #e6edf3; }
+</style>
+</head>
+<body>
+<div class="win">
+  <div class="bar"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div><span class="t">Terminal</span></div>
+  <div id="t"><span class="p">~ $ </span><span id="in" contenteditable="true" spellcheck="false"></span></div>
+</div>
+<script>
+  // La commande saisie est affichée ; son exécution réelle et sa sortie viennent du script de tournage.
+  const t = document.getElementById('t'), inp = document.getElementById('in');
+  inp.focus();
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) e.preventDefault(); });
+  window.sortie = (texte, cls) => {
+    inp.removeAttribute('contenteditable');
+    const s = document.createElement('span'); s.className = cls || 'o'; s.textContent = '\n' + texte;
+    t.appendChild(s); t.scrollTop = t.scrollHeight;
+  };
+</script>
+</body>
+</html>

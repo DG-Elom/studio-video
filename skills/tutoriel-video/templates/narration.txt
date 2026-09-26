@@ -1,0 +1,14 @@
+## 01-intro | Titre du tutoriel
+Une ou deux phrases qui disent ce que l'on va obtenir à la fin, en langage d'utilisateur.
+
+## 02-etape | 1. Première étape
+Ouvrez {1}le menu, puis cliquez sur {2}le bouton. Le repère se place juste AVANT le mot qui nomme ce qu'on montre.
+
+## 03-attente | 2. Lancer
+Cliquez sur {1}Run. Le traitement prend quelques secondes.
+
+## 04-resultat ^
+{1}Et voici le résultat. Cette séquence est ouverte seulement quand le résultat est visible ; « ^ » met les sous-titres en haut.
+
+## 05-outro | Récapitulatif
+Ce qu'il faut retenir, en une ou deux phrases.

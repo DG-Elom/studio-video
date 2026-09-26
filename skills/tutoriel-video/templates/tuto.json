@@ -1,0 +1,10 @@
+{
+  "base_url": "https://app-de-dev.exemple.fr/",
+  "auth_check": "() => !!localStorage.getItem('jeton_auth') && !location.pathname.includes('login')",
+  "dest": "~/Movies/tutoriels-mon-app",
+  "voice_id": "JBFqnCBsd6RMkjVDRZzb",
+  "keychain_service": "elevenlabs-api-key",
+  "viewport": [1600, 900],
+  "dpr": 1.2,
+  "locale": "en-US"
+}

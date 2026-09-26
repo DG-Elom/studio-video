@@ -1,0 +1,12 @@
+{
+  "name": "studio-video",
+  "displayName": "Studio vidéo",
+  "version": "0.1.0",
+  "description": "Two measured video workflows for Claude Code on macOS: turn an existing poster into a coded motion-design teaser, and film a narrated web-app tutorial with the voice-over generated first.",
+  "author": {
+    "name": "DG-Elom",
+    "url": "https://github.com/DG-Elom"
+  },
+  "license": "MIT",
+  "keywords": ["video", "motion-design", "poster", "teaser", "tutorial", "screencast", "elevenlabs", "playwright", "ffmpeg"]
+}
