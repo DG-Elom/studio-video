@@ -25,7 +25,8 @@ Claude Code on **macOS 14 or later** (the scripts rely on macOS-only tools):
 - Rendering is local: headless Chrome driven by Playwright, encoding by ffmpeg, in a project folder the skill creates for the task.
 - `motion-affiche` loads GSAP 3.13 from `cdn.jsdelivr.net` and fonts from `fonts.googleapis.com` while rendering. Your poster is not uploaded.
 - `tutoriel-video` sends the narration text to `api.elevenlabs.io` (text-to-speech, billed to your ElevenLabs account) and opens the web app you name in a Chrome profile stored in the project folder. **You log in yourself**; Claude never types credentials. Film a demo environment with fictitious data.
-- No telemetry, no other network calls.
+- Your ElevenLabs key is read from the Keychain at run time and sent only to `api.elevenlabs.io`, the service that issued it.
+- No telemetry, no other network calls. Details: [Privacy policy](PRIVACY.md).
 
 ## Evals
 
